@@ -130,14 +130,19 @@ input[type="date"]
   border-radius: 4px;
   height: 41px;
   width: 9vw;
+  min-width: 110px;
   text-align: left;
-  margin: 1vh .5vw;
+  margin: 1vh 0.5vw;
   cursor: pointer;
 }
 
 .metrics-tab
 {
-  margin: 0 auto;
+  margin: 0 auto 20px auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  
 }
 
 
@@ -358,7 +363,7 @@ li label
 }
 
 .slider__range {
-  background-color: #136FED;
+  background-color: transparent;
   z-index: 2;
 }
 
@@ -428,5 +433,13 @@ li label
   position: relative;
 }
 
+/* media queries*/
 
+@media only screen and (max-width: 535px) 
+{
+  .metrics-tab
+  {
+    justify-content: space-around;
+  }
+}
 

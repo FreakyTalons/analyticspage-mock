@@ -6,6 +6,7 @@ import Content from "./Content";
 import TableHeader from "./TableHeader";
 import img404 from "../assets/img404.svg";
 import { setMinMax } from "../store/minMaxSlice";
+import { setDataCopy, setDispClrFilter } from "../store/clrFilterSlice";
 
 
 export default function Table() {
@@ -13,12 +14,14 @@ export default function Table() {
   const [data, setData] = useState([]) 
   const [sorting, setSorting] = useState({column:'date', order:'asc'})   
   const [serApp, setSerApp] = useState([])
-  const [copyData, SetCopyData] = useState([])
-
+  const [range, setRange] = useState({})
+ 
   const reqURL = useSelector((state) => state.reqs.value);
   const data0 = useSelector((state) => state.data);
   const appNameList = useSelector((state) => state.appName.value);
   const minMax = useSelector((state) => state.minMax.value);
+  const clear = useSelector((state) => state.clrFilter.dispClrFilter)
+  const copyData = useSelector((state) => state.clrFilter.dataCopy)
 
   const dispatch = useDispatch();
 
@@ -77,7 +80,7 @@ useEffect(() => {
       }
       minMaxCreator()
     }
-  },[data0,reqURL,data])
+  },[data0,reqURL,data, serApp, range])
 
   //function for data sorting
   useEffect(() => {
@@ -170,24 +173,44 @@ useEffect(() => {
       );
       tempArr = [...tempArr, ...filteredData]
     }
-    SetCopyData(data)
+    dispatch(setDataCopy(data))
     setData(tempArr);
   },[serApp])
 
 
+  useEffect(() => {
+    const tempArr = [];
+    let metric = range.id;
+    for(let i=0; i<data.length; i++)
+    {
+      if(data[i][metric]>=range.min && data[i][metric]<=range.max)
+        tempArr.push(data[i])
+    }
+    dispatch(setDataCopy(data))
+    setData(tempArr);
+  },[range])
+
+
+  let op1 = {opacity:"1"};
+  let op0 = {opacity:"0"};
+
   return (<div className="table-div">
   {data0.loading && <div className="loading-text">Please wait while we fetch your data...</div>}
-  {!data0.loading && data0.error ? <div className="div-404">
+  {(!data0.loading && data0.error) || data.length===0 ? <div className="div-404">
     <div><img src={img404} className='img-404' alt='404'/></div>
     <div><p className="txt1">Hey! Something's off! <br/> We couldn't display the given data.</p>
     <p className="txt2">Try changing your filters or selecting a different date.</p></div>
   </div>:
    null}
-  {!data0.loading && data0.value.length ? (
+  {!data0.loading && data0.value.length && data.length ? (
+    <>
+    <button className="bt-blue" style={clear?op1:op0} onClick={() => {setData(copyData);dispatch(setDispClrFilter())}}>Clear Filters</button>
+    <br/> <br/>
     <table className="cust-table" id="1234">
-      <TableHeader sorting={sorting} sortTable={sortTable} setSerApp={setSerApp} setData={setData} copyData={copyData}/>
+      <TableHeader sorting={sorting} sortTable={sortTable} setSerApp={setSerApp} setData={setData} setRange={setRange}/>
       <Content data={data}/>
     </table> 
+    </>
   ) : null }
   </div>);
 }

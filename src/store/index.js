@@ -4,7 +4,8 @@ import dataReducer from "./dataSlice";
 import requestReducer from "./requestSlice";
 import metricsCopyReducer from "./metricsCopySlice";
 import appNameReducer from "./appNameSlice";
-import minMaxReducer from "./minMaxSlice"
+import minMaxReducer from "./minMaxSlice";
+import clrFilterReducer from "./clrFilterSlice";
 
 
 export const store = configureStore({
@@ -15,5 +16,6 @@ export const store = configureStore({
     reqs: requestReducer,
     appName: appNameReducer,
     minMax: minMaxReducer,
+    clrFilter: clrFilterReducer,
   },
 });

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { useSelector} from "react-redux";
+import { useDispatch, useSelector} from "react-redux";
+import { setDispClrFilter } from "../store/clrFilterSlice";
 import MultiRangeSlider from "./MultiRangeSlider";
 
 
-const HeaderCell = ({ column, sorting, sortTable, setSerApp, appNameList, setData, copyData, minMax}) => {
+const HeaderCell = ({ column, sorting, sortTable, setSerApp, appNameList, minMax, dispatch, setRange}) => {
   
  
  
@@ -14,18 +15,22 @@ const HeaderCell = ({ column, sorting, sortTable, setSerApp, appNameList, setDat
   
     //state management
   const [menuDisp, setMenuDisp] = useState(false);
-  const [clear, setClrFilter] = useState(false);
   const [list0, setList0] = useState(listing);
-  
+  const [sliderValues, setSliderValues] = useState({min:0, max:0})
   
 
   //process variables
   let dispFlex = { display: "flex" };
   let dispNone = { display: "none" };
-  let dispInline = {display: "inline"};
   
   const isDescSort = sorting.column === column.id && sorting.order === "desc";
   const isAscSort = sorting.column === column.id && sorting.order === "asc";
+
+  const handleSliderSubmit = (id) => 
+  {
+    dispatch(setDispClrFilter());
+    setRange({id:id, ...sliderValues});
+  }
 
   const handleCheckboxClick = ({app_name, checked}) =>
   {
@@ -47,7 +52,7 @@ const HeaderCell = ({ column, sorting, sortTable, setSerApp, appNameList, setDat
 
   const handleSubmitClick = () =>
   {
-    setClrFilter(prevValue => !prevValue);
+    dispatch(setDispClrFilter());
     setMenuDisp(prevValue => !prevValue);
     let listFin = []
     for(let i=0;i<list0.length;i++)
@@ -136,7 +141,6 @@ const HeaderCell = ({ column, sorting, sortTable, setSerApp, appNameList, setDat
               </ul>
               <button style={{margin:"10px auto"}} className="bt-blue" onClick={handleSubmitClick}>Apply</button>
           </div>
-          <button style={clear?dispInline:dispNone} className="bt-blue" onClick={ () => {setClrFilter(); setData(copyData)} } > Clear Filters</button>
         </>
           
         ) : (
@@ -163,9 +167,9 @@ const HeaderCell = ({ column, sorting, sortTable, setSerApp, appNameList, setDat
             <MultiRangeSlider
               min={minVal(column.id)}
               max={maxVal(column.id)}
-              onChange={({ min, max }) => console.log(`min = ${min}, max = ${max}`)}
+              onChange={({ min, max }) => setSliderValues({min:min, max:max})}
             />
-            <button style={{margin:"10px auto"}} className="bt-blue">Apply</button>
+            <button style={{margin:"10px auto"}} className="bt-blue" onClick={() => handleSliderSubmit(column.id)}>Apply</button>
             </div>
         )}
         {isDescSort && <i className=" arrow-ico fa-solid fa-sort-up"></i>}
@@ -177,17 +181,18 @@ const HeaderCell = ({ column, sorting, sortTable, setSerApp, appNameList, setDat
   );
 };
 
-export default function TableHeader({ sorting, sortTable, setSerApp, setData, copyData }) {
+export default function TableHeader({ sorting, sortTable, setSerApp, setRange }) {
 
     const columns = useSelector((state) => state.metricsCopy.value);
     const appNameList = useSelector((state) => state.appName.value);
     const minMax = useSelector((state) => state.minMax.value);
+    const dispatch = useDispatch();
 
   return (
     <thead>
       <tr>
         {columns.map((column) => (
-          <HeaderCell column={column} sorting={sorting} sortTable={sortTable} setSerApp={setSerApp} appNameList={appNameList} setData={setData} copyData={copyData} minMax={minMax}/>
+          <HeaderCell column={column} sorting={sorting} sortTable={sortTable} setSerApp={setSerApp} appNameList={appNameList} minMax={minMax} dispatch={dispatch} setRange={setRange}/>
         ))}
       </tr>
     </thead>
