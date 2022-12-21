@@ -3,18 +3,16 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
     value: {
         fetchable: true,
-        URL: "http://go-dev.greedygame.com/v3/dummy/report?startDate&endDate="
+        URL: "https://go-dev.greedygame.com/v3/dummy/report?startDate&endDate="
     }
 }
-
-//https://cors-anywhere.herokuapp.com/
 
 export const requestSlice = createSlice({
     name: 'reqs',
     initialState,
     reducers: {
         setReq: (state, action) => {
-            state.value.URL = "http://go-dev.greedygame.com/v3/dummy/report?startDate="+action.payload.startDate+"&endDate="+action.payload.endDate;
+            state.value.URL = "https://go-dev.greedygame.com/v3/dummy/report?startDate="+action.payload.startDate+"&endDate="+action.payload.endDate;
         },
         setFetchable: (state) =>
         {
