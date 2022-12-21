@@ -196,7 +196,7 @@ useEffect(() => {
 
   return (<div className="table-div">
   {data0.loading && <div className="loading-text">Please wait while we fetch your data...</div>}
-  {(!data0.loading && data0.error) || data.length===0 ? <div className="div-404">
+  {(!data0.loading && data0.error) || (data.length===0 && data0.length) ? <div className="div-404">
     <div><img src={img404} className='img-404' alt='404'/></div>
     <div><p className="txt1">Hey! Something's off! <br/> We couldn't display the given data.</p>
     <p className="txt2">Try changing your filters or selecting a different date.</p></div>
