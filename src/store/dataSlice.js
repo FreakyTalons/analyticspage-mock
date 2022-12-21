@@ -7,8 +7,6 @@ const initialState = {
   error: "",
 };
 
-// "http://go-dev.greedygame.com/v3/dummy/report?startDate=2021-05-01&endDate=2021-05-03"
-
 export const fetchData = createAsyncThunk("store/fetchData", async (reqURL) => {
   const response = await axios
     .get(reqURL);

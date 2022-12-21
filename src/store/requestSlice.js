@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
     value: {
         fetchable: true,
-        URL: "https://go-dev.greedygame.com/v3/dummy/report?startDate&endDate="
+        URL: "https://go-dev.greedygame.com/v3/dummy/report?startDate=&endDate="
     }
 }
 
