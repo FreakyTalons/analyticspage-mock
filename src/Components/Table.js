@@ -2,104 +2,84 @@ import React, {useEffect, useState} from "react";
 import { fetchData } from "../store/dataSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchAppData } from "../store/appNameSlice";
-import icon from "../assets/icon.png";
+import Content from "./Content";
+import TableHeader from "./TableHeader";
 import img404 from "../assets/img404.svg";
+import { setMinMax } from "../store/minMaxSlice";
 
-const HeaderCell = ({column, sorting, sortTable}) =>
-{
-  const isDescSort = sorting.column === column.id && sorting.order === "desc";
-  const isAscSort = sorting.column === column.id && sorting.order === "asc";
-  const futureSortingOrder = isDescSort? "asc":"desc";
-  return(
-    column.disp && <th className={column.class}>
-    <i class=" funnel-ico fa-solid fa-filter" onClick={() => sortTable({column:column.id, order:futureSortingOrder})}></i> 
-    {isAscSort && <i class=" funnel-ico fa-solid fa-sort-up"></i>}
-    {isDescSort && <i class=" funnel-ico fa-solid fa-sort-down"></i>}
-    <br/><br/> { column.name}
-    </th>
-  )
-}
-
-const TableHeader = ({columns, sorting, sortTable}) =>
-{
-  return(
-    <thead>
-      <tr>
-        {columns.map((column) => 
-         <HeaderCell column={column} sorting={sorting} sortTable={sortTable}/>
-        )}
-      </tr>
-    </thead>
-  )
-}
-
-const Content = ({data, columns}) =>
-{
-
-  return(
-      <tbody>
-       {
-        data.map((entry,index) => (
-          <tr key={index}>
-            {columns.map((column) => (
-                column.id === 'date'?
-                  (column.disp && <td style={{textAlign:'left'}}>{entry[column.id].substring(0,10)}</td>):
-                    (column.id === 'fill_rate'?
-                      (column.disp && <td style={{textAlign:'center'}}>{Math.round(entry['fill_rate']*100)/100}</td>):
-                        (column.id === 'CTR'?
-                          (column.disp && <td style={{textAlign:'center'}}>{Math.round(entry['CTR']*100)/100}</td>):
-                            (column.id === 'revenue'?
-                              (column.disp && <td style={{textAlign:'center'}}>₹{Math.round(entry['revenue']*100)/100}</td>):
-                                (column.id === 'app_id'?
-                                  (<td style={{textAlign:'left'}}><img style={{width:'24px'}} src={icon} alt="app logo"/>{entry['app_name']}</td>):
-                                    (column.disp && <td style={{textAlign:'center'}}>{entry[column.id]}</td>)))))
-            ))}
-          </tr>
-        ))
-       }
-      </tbody>
-  )
-}
 
 export default function Table() {
-  const dispatch = useDispatch();
-
-  const reqURL = useSelector((state) => state.reqs.value);
-  const metrics = useSelector((state) => state.metricsCopy.value);
-  const data0 = useSelector((state) => state.data);
-  const appNameList = useSelector((state) => state.appName.value);
+  
   const [data, setData] = useState([]) 
   const [sorting, setSorting] = useState({column:'date', order:'asc'})   
+  const [serApp, setSerApp] = useState([])
+  const [copyData, SetCopyData] = useState([])
+
+  const reqURL = useSelector((state) => state.reqs.value);
+  const data0 = useSelector((state) => state.data);
+  const appNameList = useSelector((state) => state.appName.value);
+  const minMax = useSelector((state) => state.minMax.value);
+
+  const dispatch = useDispatch();
 
   const sortTable = (newSorting) => {
     setSorting(newSorting)
   }
+ 
+// function to get metrics data and app data from the API
+useEffect(() => {
+  dispatch(fetchData(reqURL.URL))
+  dispatch(fetchAppData())
+}, [reqURL])
 
-  useEffect(() => {
-    dispatch(fetchData(reqURL.URL))
-    dispatch(fetchAppData())
-  }, [reqURL])
+//function to create the final dataset for mapping
+useEffect(() => {
 
-  useEffect(() => {
-    const finDataCreator = () =>
+  const finDataCreator = () =>
+  {
+    const newData = [];
+
+    for (let i = 0; i < data0.value.length; i++) 
     {
-      const newData = [];
-      for (let i = 0; i < data0.value.length; i++) 
-      {
-          for (let j = 0; j < appNameList.length; j++)
-          {
-              if (data0.value[i].app_id === appNameList[j].app_id)
-              {
-                let tempObj = {...data0.value[i], app_name:appNameList[j].app_name, fill_rate: ((data0.value[i].requests/data0.value[i].responses)*100), CTR: ((data0.value[i].clicks/data0.value[i].impressions)*100)};
-                newData.push(tempObj);
-              }
-          }  
-      }
-      setData(newData)
-    } 
-    finDataCreator();
-  }, [reqURL,data0, appNameList])
+        for (let j = 0; j < appNameList.length; j++)
+        {
+            if (data0.value[i].app_id === appNameList[j].app_id)
+            {
+              let tempObj = {...data0.value[i], app_name:appNameList[j].app_name, fill_rate: Math.round((data0.value[i].requests/data0.value[i].responses)*10000)/100, CTR: Math.round((data0.value[i].clicks/data0.value[i].impressions)*10000)/100};
+              newData.push(tempObj);
+            }
+        }  
+    }
+    setData(newData)
+  } 
+  finDataCreator(); 
+}, [reqURL,data0, appNameList])
 
+//function to decide min max of each metric
+  useEffect(() => {
+    if(data[0])
+    {
+      //let newData= data0.value;
+      const minMaxCreator = () =>
+      {
+        const newMinMax = [];
+        for(let i=0;i<minMax.length;i+=1)
+        {
+          const metric = minMax[i].id;
+          const tempArr = [];
+          for(let j=0; j<data.length; j+=1)
+          {
+            metric === 'revenue'? tempArr.push(Math.round(data[j][metric]*100)/100) : tempArr.push(data[j][metric]);
+          }
+         newMinMax.push({id:metric, max:Math.max(...tempArr), min:Math.min(...tempArr)})
+        }
+        dispatch(setMinMax(newMinMax))
+      }
+      minMaxCreator()
+    }
+  },[data0,reqURL,data])
+
+  //function for data sorting
   useEffect(() => {
     const copy = [...data];
     const col = sorting.column;
@@ -180,6 +160,20 @@ export default function Table() {
     arraySorter();
   }, [sorting])
 
+ //function to filter data according to app
+  useEffect(() => {
+    let tempArr = [];
+    for(let i=0;i<serApp.length;i++)
+    {
+      const filteredData = data.filter(row =>
+        row.app_name.toLowerCase().includes(serApp[i].toLowerCase())
+      );
+      tempArr = [...tempArr, ...filteredData]
+    }
+    SetCopyData(data)
+    setData(tempArr);
+  },[serApp])
+
 
   return (<div className="table-div">
   {data0.loading && <div className="loading-text">Please wait while we fetch your data...</div>}
@@ -191,8 +185,8 @@ export default function Table() {
    null}
   {!data0.loading && data0.value.length ? (
     <table className="cust-table" id="1234">
-      <TableHeader columns={metrics} sorting={sorting} sortTable={sortTable}/>
-      <Content data={data} columns={metrics} appNameList={appNameList} />
+      <TableHeader sorting={sorting} sortTable={sortTable} setSerApp={setSerApp} setData={setData} copyData={copyData}/>
+      <Content data={data}/>
     </table> 
   ) : null }
   </div>);

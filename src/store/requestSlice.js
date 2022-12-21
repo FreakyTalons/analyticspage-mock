@@ -7,6 +7,8 @@ const initialState = {
     }
 }
 
+//https://cors-anywhere.herokuapp.com/
+
 export const requestSlice = createSlice({
     name: 'reqs',
     initialState,

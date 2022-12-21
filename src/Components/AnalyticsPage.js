@@ -33,7 +33,7 @@ export default function AnalyticsPage() {
   let dispBlock = { display: "flex" };
   let dispNone = { display: "none" };
   let active = { borderLeft: "solid #136FED 6px" };
-  let inactive = { borderLeft: "none" };
+  let inactive = { borderLeft: "solid #EAEAEA 1px" };
 
   //callback to hide or show metrics panel
   const handleClick = () => {
@@ -146,9 +146,9 @@ export default function AnalyticsPage() {
           })}
         </div>
         <div className="ctrls">
-          <span className="close-bt" onClick={handleClick}>
+          <button className="close-bt" onClick={handleClick}>
             Close
-          </span>
+          </button>
           <button className="bt-blue" onClick={handleApplyChanges}>Apply Changes</button>
         </div>
       </div>
